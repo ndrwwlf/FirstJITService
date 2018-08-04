@@ -3,16 +3,7 @@ using Quartz;
 using Quartz.Impl;
 using Serilog;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JITWeatherService
 {
@@ -28,13 +19,25 @@ namespace JITWeatherService
             string userDir = "C:\\Users\\workweek";
             //string userDir = "C:\\Users\\User";
 
+            //Log.Logger = new LoggerConfiguration()
+            //.MinimumLevel.Information()
+            //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            //.MinimumLevel.Override("System", LogEventLevel.Information)
+            //.Enrich.FromLogContext()
+            ////to outsite of project
+            //.WriteTo.RollingFile(userDir + "/Logs/log-{Date}.log", retainedFileCountLimit: null)
+            //.CreateLogger();
+
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+            .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("System", LogEventLevel.Information)
+            .MinimumLevel.Override("Quartz", LogEventLevel.Error)
             .Enrich.FromLogContext()
             //to outsite of project
-            .WriteTo.RollingFile(userDir + "/Logs/log-{Date}.log", retainedFileCountLimit: null)
+            .WriteTo.File(userDir + "/Logs/MasterLogJIT.txt", restrictedToMinimumLevel: LogEventLevel.Information, rollOnFileSizeLimit: true)
+            .WriteTo.RollingFile(userDir + "/Logs/log-{Date}.txt", retainedFileCountLimit: null)
+            .WriteTo.Console()
             .CreateLogger();
 
             AerisJobParams aerisJobParams = new AerisJobParams();

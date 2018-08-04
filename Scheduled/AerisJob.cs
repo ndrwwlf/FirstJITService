@@ -64,7 +64,7 @@ namespace JITWeatherService.Scheduled
             }
 
             Log.Information("Finished GatherWeatherData()");
-            Log.Information($"Expected Total WeatherData Entries: {expectedTotalWeatherDataEntries}, Actual: {actualTotalWeatherDataEntries}.");
+            Log.Information($"Expected Total WeatherData Entries: {expectedTotalWeatherDataEntries}, Actual: {actualTotalWeatherDataEntries}.\n\n");
 
             expectedTotalWeatherDataEntries = 0;
             actualTotalWeatherDataEntries = 0;
@@ -172,6 +172,11 @@ namespace JITWeatherService.Scheduled
                     try
                     {
                         List<WeatherData> weatherDataList = _weatherRepository.GetWeatherDataByZipStartAndEndDate(result.Zip, result.DateStart, result.DateEnd);
+                        if (weatherDataList.Count != result.Days)
+                        {
+                            Log.Error($"WeatherDataList.Count != reading.Days; WeatherDataList.Count = {weatherDataList.Count} reading.Days = {result.Days}. " +
+                                $"RdngID: {result.RdngID}.");
+                        }
                         HeatingCoolingDegreeDays heatingCoolingDegreeDays = HeatingCoolingDegreeDaysValueOf(result, weatherDataList);
 
                         DoCalculation(result, heatingCoolingDegreeDays);
@@ -192,8 +197,7 @@ namespace JITWeatherService.Scheduled
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace);
+                Log.Error(ex.Message + " " + ex.StackTrace);
             }
 
             expectedWthExpUsageInserts = 0;
@@ -242,14 +246,14 @@ namespace JITWeatherService.Scheduled
                 {
                     if (weatherData.AvgTmp >= result.B5)
                     {
-                        hcdd.CDD = hcdd.CDD + (weatherData.AvgTmp - result.B5 );
+                        hcdd.CDD = hcdd.CDD + (weatherData.AvgTmp.Value - result.B5 );
                     } 
                     
                 } else if (result.B3 > 0)
                 {
                     if (weatherData.AvgTmp <= result.B3)
                     {
-                        hcdd.HDD = hcdd.HDD + (result.B3 - weatherData.AvgTmp);
+                        hcdd.HDD = hcdd.HDD + (result.B3 - weatherData.AvgTmp.Value);
                     }
                 } 
             }
